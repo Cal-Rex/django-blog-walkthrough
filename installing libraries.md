@@ -138,4 +138,3 @@ ___
         - web: gunicorn appname.wsgi
             - "web" indicates that this app handles http traffic
             - "wsgi" stands for Web Services Gateway Interface server
-        
