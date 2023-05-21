@@ -138,3 +138,10 @@ ___
         - web: gunicorn appname.wsgi
             - "web" indicates that this app handles http traffic
             - "wsgi" stands for Web Services Gateway Interface server
+14. Deploy to Heroku
+    - add, commit, psh everything
+    - got to heroku and connect github repo to the heroku project
+    - deploy the branch
+
+___
+
