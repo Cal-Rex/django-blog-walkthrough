@@ -145,7 +145,6 @@ ___
 
 ___
 
-
 ### Entity relationship diagram
 # [![Lesson 3: Creating a database diagram](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/TdXxN-4w3_s)
 #### posts
@@ -171,3 +170,71 @@ ___
     - Many to Many field required as multiple users should be allowed to like multiple blog posts
 
 ___
+
+### Create Database Models
+# [![Lesson 4: Building the Database models](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/X7cdN0SQrX0)
+
+in blog > models.py, add the following:
+1. first, import "User" from django
+    - from django.contrib.auth.models import User
+2. import cloudinary to get featured images linked to database
+    - from cloudinary.models import CloudinaryField
+3. create a tuple variable with the name "STATUS" with the value of (0, "draft), (1, "Published")
+    - STATUS = ((0, "Draft"), (1, "Published"))
+4. begin creating the actual tables within python classes:
+    - class Post(models.Model):
+        -  __class imports the Model function from django's models library__ 
+    -     title = models.CharField(max_length=200, unique=True)
+        - __Makes a character field, single line with a max length of 200, specified as unique__
+    -     slug = models.SlugField(max_length=200, unique=True)
+        - __A slug is a string that can only include characters, numbers, dashes, and underscores. It is the part of a URL that identifies a particular page on a website, in a human-friendly form__
+    -     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blog_posts")  # noqa
+        - __has a one-to-many relationship, so contains a foreignkey that can be used on other tables to identify it__
+        - __on_delete=models.CASCADE means that if an author is deleted, all related items oertaining to blog_posts wil be deleted__
+    -     updated_on = models.DateTimeField(auto_now=True)
+        - __datetime field that is defaulting to the current date and time__
+    -     content = models.TextField()
+        - __text field for content input__
+    -     featured_image = CloudinaryField('image', default='placeholder')
+        - __field that mkaes use of the importing of cloudinary, so we can import images from our cloudinary db into the project__
+    -     excerpt = models.TextField(blank=True)
+        - __a field for an excerpt of the full post text__
+    -     created_on = models.DateTimeField(auto_now_add=True)
+        - __same as updated on__
+    -     status = models.IntegerField(choices=STATUS, default=0)
+        - __integer field that picks from the choices given in the STATUS variable, values in in the STATUS tuple above determine the choices__
+    -     likes = models.ManyToManyField(User, related_name='blog_likes', blank=True)
+        - __Many to Many field, which links related tables with the name blog_data__
+    - 
+    -     class meta:
+    -         ordering = ['-created_on']
+        - __structures entries in descending order__
+    - 
+    -         def __str__(self):
+    -             return self.title
+        - __this method returns the string definition of an object, it has to target itself or it doesn't work__
+    - 
+    -         def number_of_likes(self):
+    -             return self.likes.count()
+        - __will count the number of likes stored on the likes entry__
+5. repeat this process for comments and make a table that stores comments.
+heres the diagram from the video, the code above should be sufficient to figure out how to create this table
+
+|     Key      |      Name      |       Type       |    Extra Info     |
+| ------------ | -------------- | ---------------- | ----------------- |
+|  ForeignKey  |      post      |    Post model    | Cascade on delete |
+|              |      name      |    CharField     |  Max Length 80    |
+|              |      email     |    EmailField    |                   |
+|              |      body      |    TextField     |                   |
+|              |   created_on   |   DateTimeField  | auto_now_add True |
+|              |     Excerpt    |   BooleanField   |   default False   |
+
+Also, meta fields will need to be added for the comment itself and by who it was by.
+This can be done using a python f string, see the Comment class model in models.py for example.
+
+6. once all of this is built, migrate the models into the database:
+    - python3 manage.py makemigrations
+    - python3 manage.py migrate
+    - if you need to double check the tables before you try to migrate them, you can do a dry run with:
+        - python3 manage.py makemigrations --dry-run
+
