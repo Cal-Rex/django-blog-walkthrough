@@ -145,3 +145,29 @@ ___
 
 ___
 
+
+### Entity relationship diagram
+# [![Lesson 3: Creating a database diagram](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/TdXxN-4w3_s)
+#### posts
+
+|     Key      |      Name      |       Type       |
+| ------------ | -------------- | ---------------- |
+| ------------ | Title(unique)  |    Char[200]     |
+|  ForeignKey  |     Author     |    user model    |
+|              |  Created Date  |    DateTime      |
+|              |  Updated Date  |    DateTime      |
+|              |     Content    |    TextField     |
+|              | Featured Image | Cloudinary Image |
+|              |     Excerpt    |    TextField     |
+| Many to Many |      Likes     |    User Model    |
+|              |  Slug (unique) |     SlugField    |
+|              |     Status     |     Integer      |
+
+- Author field: 
+    - one to many relationship, field must have a foreign key value as the author value wil need to appear in multiple plases/posts
+- Slug: 
+    - a label that can be used as part of a URL
+- likes:
+    - Many to Many field required as multiple users should be allowed to like multiple blog posts
+
+___
