@@ -240,7 +240,7 @@ This can be done using a python f string, see the Comment class model in models.
 
 ___
 
-## building the admin and admin panel
+## building the admin and admin panel, and customising content input field on blog posts
 # [![Lesson 5: Creating the admin panel](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/er5IKknKxoQ)
 
 admin : 
@@ -295,6 +295,63 @@ admin :
         - then add /admin to the url once loaded in preview (the main site has no page so will come up with a debug screen)
         - if you try to add a new post you can see that summernote has overridden the content box with a text editor
         - make a pilot test post
+
+___
+
+## creating the admin panel, part 2
+# [![Lesson 6: Creating the admin panel](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/JGt1p8JhPyY)
+
+When we enter the post title, we want the  slug field to be generated automatically.
+there is a variable in django that uses javascript to populate fields with prepopulated data.
+
+in admin.py under the PostAdmin(SummernoteModelAdmin) class, add:
+- prepopulated_fields = {'slug': ('title',)}
+    - **the variable contains an object with a KVP, the key being the 'slug' field, and the value will be 'title' wrapped inside a tuple (as the value could contain more than one parameter)**
+
+then, we can add a post filter function on the admin panel bu adding another line of code to the class:
+- list_filter = ('status', 'created_on')
+
+we can then add other functions from the django documentation that expand the details given of posts on the admin panel:
+- list_display = ('title', 'slug', 'status', 'created_on')
+    - **The list display method from django allows for table elements to be listed in a tuple as its parameter, then on the admin panel, these details will be displayed top level for the class/table**
+    - documentation: https://docs.djangoproject.com/en/3.2/ref/contrib/admin/#django.contrib.admin.ModelAdmin.list_display
+- search_fields = ['title', 'content']
+    - **search_fields method adds a search criterea to the top of the class/table on the admin panel. in this instance, this search field will search the title and content values of the table. but other values could be searched as well by adding them to the list. The search_fields structures its search criteria like so:**
+        -  WHERE (title ILIKE 'input value' OR content ILIKE 'input value')
+    documentation: https://docs.djangoproject.com/en/3.2/ref/contrib/admin/#django.contrib.admin.ModelAdmin.search_fields
+
+Using these same methods, create a class for comments, in admin.py:
+- add the @admin.register(Comment) tag before adding the new class
+- add the class CommentAdmin(admin.ModelAdmin)
+- give it a list_display variable with the tuple value of
+    - list_display = ('name', 'body', 'post', 'created_on', 'approved')
+- give it a list_filter variable with the tuple value of
+    - list_filter = ('approved', 'created_on')
+- give it a search_fields variable with the list value of
+    - search_fields = ['name', 'email', 'body']
+
+The admin panel (once refreshed) should now display another blog table for comments. with all of the above features
+
+by default, the dhango admin panel will give a dropdown called "actions" which lets the admin delete items. however, we can add more functions to this dropdown witht he variable "actions".
+
+the variable takes a list of function names as its arguments
+- add the following code to the comments class:
+    - actions = ['approve_comments']
+- below the variable, leave one blank line then add the function approve_comments with self, request and queryset as its arguments:
+    - def approve_comments(self, request, queryset):
+        - queryset.update(approved=True)
+    here, the function takes itself, and targets the queryset given as a request to update the item
+    the one line updates the value of approved to True, then the request argument makes the request to the database to change the spproved status' value in the table.
+
+with this completed, the 3 user stories currently in-progress are now complete
+
+___
+
+
+
+    
+
+
             
 
          
