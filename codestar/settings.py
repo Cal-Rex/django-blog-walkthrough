@@ -35,10 +35,10 @@ ALLOWED_HOSTS = ['codestar-django-blog-walkthru.herokuapp.com', 'localhost']
 
 
 # Application definition
-#__________________________________________________________
+# __________________________________________________________
 # any apps created (like the blog app) need to be added
 # to the list of installed apps as a string in single quotes
-#__________________________________________________________
+# __________________________________________________________
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'django.contrib.staticfiles',
     'cloudinary',
+    'django_summernote',
     'blog',
 ]
 

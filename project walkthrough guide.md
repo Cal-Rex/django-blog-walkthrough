@@ -238,3 +238,63 @@ This can be done using a python f string, see the Comment class model in models.
     - if you need to double check the tables before you try to migrate them, you can do a dry run with:
         - python3 manage.py makemigrations --dry-run
 
+___
+
+## building the admin and admin panel
+# [![Lesson 5: Creating the admin panel](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/er5IKknKxoQ)
+
+admin : 
+| -------- | ----- |
+| Username | admin |
+| Password | admin |
+
+1. we create an admin user using the terminal:
+    - python3 manage.py createsuperuser
+    - the terminal will then prompt you for username, email address and pw
+        - pw wont be echod back to screen so you want be able to see what you're typing
+2. admin page can be accessed by adding "/admin" to the end of the workspace url
+3. add the Post model created in models.py to the Admin panel
+    - in admin.py import the "Post" class from ".models"
+        - from .models import Post
+    - add the following code:
+        - admin.site.register(Post)
+4. add a WYSIWYG editor for the post
+    - intall the summernote library
+        - pip3 install django-summernote
+        - documentation for summernote: https://summernote.org/
+    - update the requirements.txt as we have installed a new library
+        - pip3 freeze --local > requirements.txt
+    - add summernote to list of INSTALLED_APPS in settings.py
+        - use the syntax: django_summernote
+    - the URLs now need to be set up, navigate to urls.py
+        - on the import line for django.urls, add "import" to the list of libraries being imported
+            - line should now look like this:
+                - from django.urls import path, include
+        - in the urlpatterns[] variable, add a new path for summernote:
+            - path('summernote/', include('django_summernote.urls')), 
+                - the include library that was just imported is used here
+    - the admin panel now needs to be told what we want to use the summernote functionality for, which i this case, its to be used for the content field instead of a basic TextField
+        - at the top of admin.py, import SummerNoteModelAdmin from django_summernote.admin
+            - from django_summernote.admin import SummerNoteModelAdmin
+            - with the new import, create a class called PostAdmin that inherits from SummerNoteModelAdmin, under the line:
+                - admin.site.register(Post)
+            - inside the class add the following:
+                - summernote_fields = ('content')
+                    - this links the summernote functionalt to fields with the name 'content'
+            - above the class replace the following codeline:
+                - admin.site.register(Post)
+                    - we are replacing this because this method only allows for 2 arguments/parameters, so it fills up too quickly / has reduced functionality
+            - with:
+                - @admin.register(Post)
+                    - this class decorator will register both the Post model and the Post admin class with the admin site.
+        - migrate all these changes
+            - because we havent made any structural database changes, the makemigrations command doesnt need to be run, just the migrate command.
+                - python3 manage.py migrate
+        - run the project
+            - python3 manage.py runserver
+        - then add /admin to the url once loaded in preview (the main site has no page so will come up with a debug screen)
+        - if you try to add a new post you can see that summernote has overridden the content box with a text editor
+        - make a pilot test post
+            
+
+         
