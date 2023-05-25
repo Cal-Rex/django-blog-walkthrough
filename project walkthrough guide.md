@@ -347,11 +347,44 @@ with this completed, the 3 user stories currently in-progress are now complete
 
 ___
 
+## Creating Views
 
+The next step is to create the views of the blog.
+to do this, the following needs to be achieved:
+1. code for a view needs to be written
+2. create a template that can render the view
+3. connect it all up in the urls.py file
 
-    
+# [![Lesson 7: Creating the views](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/LP-glKOWpi8)
 
+### step 1. code for a view needs to be written
+- first, import the generic library from views in Django
+    - from django.views import generic
+- next, the created Post model needs to be imported from models.py
+    - from .models import Post
+- create a class called PostList that takes a method called ListView from the imported generic library as an argument
+- the model variable is set as the Post model that has imported at the top of the file
+- the class will be a queryset of all the objects inside the Post table, also, they will be only shown if they have been approved, so the filter method will be applied with the argument of status=1, because we defined in models.py that if the STATUS variabe == 1 it means the post has been published
+- we'll tie the index.html template to this class too as its rendering template
+- finally, the list will paginate itself by 6 posts per page with the paginate variable:
+    - class PostList(generic.ListView):
+        - model = Post
+        - queryset = Post.objects.filter(status=1).order_by('-created_on')
+        - template_name = 'index.html'
+        - paginate_by = 6
 
-            
+### step 2. create a template that can render the views
 
-         
+- this project provided base templates for:
+    - base.html
+    - index.html
+    - post_detail.html
+    - style.css
+- html templates can be found for reference, here:
+    - https://github.com/Code-Institute-Solutions/django-blog-starter-files/tree/master/templates
+- css template can be found here:
+    - https://github.com/Code-Institute-Solutions/django-blog-starter-files/tree/master/static/css
+
+### step 3. connect it all up in the urls.py file
+
+- 
