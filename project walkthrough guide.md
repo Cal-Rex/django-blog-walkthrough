@@ -363,6 +363,7 @@ to do this, the following needs to be achieved:
 - next, the created Post model needs to be imported from models.py
     - from .models import Post
 - create a class called PostList that takes a method called ListView from the imported generic library as an argument
+    - this will allow the use of predefined functions in the generic > ListView import, such as a pagination function
 - the model variable is set as the Post model that has imported at the top of the file
 - the class will be a queryset of all the objects inside the Post table, also, they will be only shown if they have been approved, so the filter method will be applied with the argument of status=1, because we defined in models.py that if the STATUS variabe == 1 it means the post has been published
 - we'll tie the index.html template to this class too as its rendering template
@@ -387,4 +388,4 @@ to do this, the following needs to be achieved:
 
 ### step 3. connect it all up in the urls.py file
 
-- 
+# [![Lesson 8: Creating the first view](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/LP-glKOWpi8)
