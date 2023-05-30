@@ -552,3 +552,130 @@ TemplateDoesNotExist at /
 This is because i was missing the value of `TEMPLATES_DIR` from the `'DIRS'` variable inside the `TEMPLATES` list variable in settings.py
 - here is the explanation from the tutor that helped: 
     - You are missing the directory `TEMPLATES_DIR` from line 70. This is how to tell django to connect all of your templates into the directory so that are all accessible and it's why it was giving us the error message that it couldnt find anything at all
+
+The page should now load, and you should be able to see template test posts originally posted on the admin panel
+___
+
+## creating a view for post details
+
+the same 3 steps now need to be repeated for the Post details view
+
+1. code for a view needs to be written
+2. create a template that can render the view
+3. connect it all up in the urls.py file
+
+navigate to views.py
+import `View` from `django.views`, `View` should just be appended after `generic` on the `from`|`import` line. for example:
+-   ``` py
+    from django.views import generic, View
+    ```
+- repeat this process, adding `get_object_or_404` to the `django.shortcuts` imports
+-   ``` py
+    from django.shortcuts import render, get_object_or_404
+    ```
+
+then add a `class` called `PostDetail` with the argument of(`View`):
+-   ``` py
+    class PostDetail(View):
+
+        def get(self, request, slug, *args, **kwargs):
+            # the function target's itself (the PostDetail View)
+            # it takes the request function as an argument to be used later
+            # it takes the slug value of the target post (reasoning below)
+            # *args allows us to pass a variable number of non-keyword arguments to a Python function
+            # **kwargs allows us to pass a variable number of keyword arguments to a Python function
+            queryset = Post.objects.filter(status=1)
+                # filter through all of the published posts by doing a queryset on all posts 
+                # and filter to return only the ones with  a status of 1
+            post = get_object_or_404(queryset, slug=slug)
+                # as the slug is a unique identifier for a post, we can use the get_object_or_404 function
+                # from the library to get an object within the queryset (1st argument)
+                # that has the matching slug value of the slug that was parsed in as the initial argument
+                # at the top of the function
+            comments = post.comments.filter(aproved=True).order_by('created_on')
+                # with the selected post established in the variable, 
+                # data from inside the post can now be accessed for use by functions
+                # here the comments attached to that post can be directly targeted and filtered/ordered 
+                # ordering by "created_on" orders posts by oldest first, so it flows like a convo
+                # "-created_on" orders by newest first
+            liked = False
+            if post.likes.filter(id=self.request.user.id).exists():
+                liked = True
+            # the liked variable coupled with this if statement checks and delivers an action if the
+            # OP liked the post
+            # it does so by created a boolean variable with the value of false
+            # then, in the if statement, targets the likes variable inside the post variable, 
+            # then for its argument, check to see if the viewer's id matches that of the id sent in the request. 
+            # if it exists, then the liked variable is set to True
+            
+            return render(
+                request,
+                "post_detail.html",
+                {
+                    "post": post,
+                    "comments": comments,
+                    "liked": liked
+                }
+            )
+    ```
+
+the difference between `class` based views and `function` based views:
+|               Class-based view example                                         |       function-based view example       |
+| ------------------------------------------------------------------------------ | --------------------------------------- |
+|                                                                                |                                         |
+| class PostDetail(View):                                                        | `def add_item(request):`                |
+|                                                                                | `      if request.method == 'POST':`    |
+|      def get(self, request, slug, *args, **kwargs):                            | `      form = ItemForm(request.POST)`   |
+|          queryset = Post.objects.filter(status=1)                              | `        if form.is_valid():`           |
+|          post = get_object_or_404(queryset, slug=slug)                         |                                         |
+|          comments = post.comments.filter(aproved=True).order_by('created_on')  |                                         |
+|          liked = False                                                         |                                         |
+|          if post.likes.filter(id=self.request.user.id).exists():               |                                         |
+|              liked = True                                                      |                                         |
+|          return render(full code a above)                                      |                                         |
+
+While function-based views use `if` statements to check the `request`, class-based views use the function names inside the actual class to define the reuest method, and what happens when that request is made.
+
+With the view now built, the template needs to be filled out and the urls.py file needs to have a path specified to hook everything up.
+
+- post detail html template: https://github.com/Code-Institute-Solutions/django-blog-starter-files/blob/master/templates/post_detail.html
+
+Using the post variable from PostDetail inside views.py, variable names specified inside the Post table inside models.py can be accessed when writing in django/python objects into the html template:
+
+``` html
+<h1 class="post-title">
+    {{ post.title }}
+</h1>
+<!-- Post author goes before the | the post's created date goes after -->
+<p class="post-subtitle">{{ post.author }} | {{ post.created_on }}</p>
+```
+
+certain filters are used within the inline djano code in this template:
+``` html
+<p class="card-text ">{{ post.content | safe }}</p>
+```
+This flag tells Django that if a “safe” string is passed into your filter, the result will still be “safe” and if a non-safe string is passed in, Django will automatically escape it, if necessary. You can think of this as meaning “this filter is safe – it doesn't introduce any possibility of unsafe HTML.”
+
+``` html
+<!-- The body of the comment goes before the | -->
+                    {{ comment.body | linebreaks }}
+```
+The linebreaks filter replaces line breaks with <br> and double line breaks with <p>. See also the linebreaksbr filter. Syntax. {{ value|linebreaks }}
+
+with the template written and the view established. we now need to link it up with urls.py:
+add the following path to urls.py in **blog**, _not codestar_.
+```py
+path('<slug:slug>/', views.PostDetail.as_view(), name='post_detail'),
+```
+- it is worth noting here that when a python object is being passed into the url, its needs to go in angle brackets!
+- upon receiving a slug, the path will use the second argument to navigate into views.py, find the PostDetail class and render it as a view.
+    - the first mention of slug in the url path i called a path converter, i basically takes the second value and turns it into a slug field, that django can understand
+    - the second slug is a keyword name for the variable we are targetting, which in this instance is called slug
+
+finally, with everything created and hooked up, all that is needed is to add the requisite url and ontrol statement to index html.
+``` html
+<a href="{% url 'post_detail' post.slug %}" class="post-link">
+    <h2 class="card-title">{{ post.title }}</h2>
+    <p class="card-text">{{ post.excerpt }}</p>
+</a>
+```
