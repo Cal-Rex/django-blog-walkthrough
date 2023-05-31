@@ -818,3 +818,86 @@ If all goes to plan, copy/paste the new templates in for logout and signup:
 
 ___
 
+## Enable Commenting
+
+# [![Lesson 10: enable commenting ](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/dm1MToEiXuw)
+> At 0:50 in this video, Matt installs a package called django-crispy-forms into the walkthrough project.
+> Since this video was made, a newer version of django-crispy-forms has been released which is automatically installed using the command from this video. To ensure you are working with the same package that Matt uses in this video, please use the following command to install crispy forms for this walkthrough:
+- `pip3 install django-crispy-forms==1.14.0`
+
+because we have added a new package for the tutorial, lets run the standard process of:
+1. updating requirements.txt:
+    - `pip3 freeze --local > requirements.txt`
+2. add `'crispy_forms'` to `INSTALLED_APPS` in settings.py
+
+in additon to these steps, also add an additional variable to settings.py to make sure that crispy uses bootstrap for its formatting:
+-   ``` py
+    CRISPY_TEMPLATE_PACK = 'bootstrap4'
+    ```
+
+with crispy forms set up, we now need to create a form class.
+start by creating a new file in the `blog` folder called `forms.py`
+
+in the new file, import the `Comment` class from models.py, and also `forms` from `django`
+-   ``` py
+    from .models import Comment
+    from django import forms
+    ```
+
+Then, create a class called `CommentForm` with an argument that pulls the `ModelForm` template from the imported `forms` package:
+-   ``` py
+    class CommentForm(forms.ModelForm):
+    ```
+
+Inside this class, add a `Meta` class:
+-   ``` py
+    class Meta:
+        model = Comment
+        fields = ('body',) 
+            # trailing comment needed here in the value, so that python recognises the value as a tuple and not a string
+            # having a string value for the fields variable would throw an error
+    ```
+With the `CommentForm` class created, we now need to import it into our views.py file. add the following import command to the top of views.py:
+-   ``` py
+    from .forms import CommentForm
+    ```
+
+now that the form is successfully imported, it needs to be rendered as part of the view.
+- inside the `PostDetail` Class, in the return statement at the bottom of the class, add the following to the 3rd argument/dictionary in the render method so that it looks like this:
+    -   ``` py
+        return render(
+            request,
+            "post_detail.html",
+            {
+                "post": post,
+                "comments": comments,
+                "liked": liked,
+                "comment_form": CommentForm()
+            }
+        )
+        ```
+Next, in `post_detail.html`, add the django code in to implement the crispy forms functionality on the page. at the top of the file, add:
+-   ```html
+    {% load crispy_forms_tags %}
+    ```
+
+Then, we need to add the comment html to `post_detail.html`, in the last `<div>` with the class `card-body` (around line 79, bottom of the code):
+-   ``` html
+    {% if user.is_authenticated  %}
+
+    <h3>Leave a comment:</h3>
+    <p>Posting as: {{ user.username }}</p>
+    <form method="post" style="margin-top: 1.3em;">
+        {{ comment_form | crispy }}
+        <!-- This renders the form using the crispy filter to make it look nice. -->
+        {% csrf_token %}
+        <!-- cross site request forgery is a method in which hackers try to attack sites and steal user data
+        the csrf token is a built in method in django that prevents from such attacks, it must be added to all forms that are created for security purposes -->
+        <button type="submit" class="btn btn-signup btn-lg">Submit</button>
+    </form>
+    {% endif %}
+    ```
+
+run the app now to see if everything is displaying as it should, though note: trying to submit a comment will throw an error at this stage.
+
+___
