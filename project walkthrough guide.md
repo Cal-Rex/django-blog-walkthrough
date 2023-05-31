@@ -3,6 +3,9 @@ ___
 
 ## Create an empty project
 
+Check what version of python you are running with the following terminal command:
+- `ls ../.pip-modules/lib`
+
 # [![Lesson 1: Creating an empty django project](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/MagEuw9Q4T4)
 ### install
 The following 3 packages / libraries are the first things to install when creating the project
@@ -755,3 +758,63 @@ test user created using site:
 | test-user | Password+1 |
 
 ___
+
+## Styling the Authenticaion process
+
+# [![Lesson 10: Adding Authentication](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/IYlhc4c64U4)
+
+before we proceed we need to double-check what version of python that we are using. you can do this with the following terminal command:
+- `ls ../.pip-modules/lib`
+
+Once we know what version we are running, we can use the following command to import all of the templates within python - the library sitting above our workspace - into the workspace so that we can tweak them to make them look how we want.
+- `cp -r ../.pip-modules/lib/VERSIONSOFPYTHONINHERE/site-packages/allauth/templates/* ./templates`
+- the command used for this project is:
+    - `cp -r ../.pip-modules/lib/python3.8/site-packages/allauth/templates/* ./templates`
+    - [`copy`] [`recursive`] [`fileplath`] [`destination for copy`]
+
+This will create multiple directories in the templates folder. particularly, templates for the login/signup/logout pages in the `account` folder.
+
+navigate to templates > account > login.html
+
+At the top of the file, alter the {% extends %} tag so that this template extends from the already made base.html in the project. not `accounts/base.html`
+
+next, this project doesnt use the social account part, so we are just going to comment it out for now.
+
+We can now begin styling the html elements with bootstrap. use this quick emmet abbreviation to create
+-   ``` html
+    .container>.row>.col-md-8.mt-3.offset-md-2
+    ```
+    - This creates a container with a column div inside a row div with an offset of 2 so that the container is centred
+    - Take the 3 closing `</div>` tags from this new container and cut/paste them at the bottom of the html file above the {% endblock %} tag so that all the form information is contained within the container
+
+change the tag wrapping {% trans "sign in" %} from an `h1` to an `h3`
+
+change the inner text inside {% blocktrans %} to:
+``` html
+Welcome back to the Code|Star blog. 
+To leave the comment or like a post, please log in. If you
+have not created an account yet, then
+<a class="link" href="{{ signup_url }}">sign up</a>.
+```
+close this column and row off and create another row/column:
+``` html
+    </div>
+</div>
+.row>.col-md-8.mt-3.offset-md-2
+<!-- dont forget to remove the 2 new closing tags from the mmet shortcut -->
+```
+
+contain the form elements inside this second row>column.
+
+then, change the form button clas sstyles with some better bootstrap styling...
+``` html
+<button class="btn btn-signup right" type="submit">{% trans "Sign In" %}</button>
+```
+
+run the project and check the form is working properly.
+
+If all goes to plan, copy/paste the new templates in for logout and signup:
+- https://github.com/Code-Institute-Solutions/django-blog-starter-files/tree/master/templates/account
+
+___
+
