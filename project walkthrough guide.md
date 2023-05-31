@@ -725,6 +725,11 @@ login and logout urls also need to be added as variables here in the settings. a
     LOGOUT_REDIRECT_URL = '/'
     ```
 
+also, during the testing process, if you dont want to have to test with emails, you can turn this off by adding this variable to settings.py too:
+-   ``` py
+    ACCOUNT_EMAIL_VERIFICATION = 'none'
+    ```
+
 With the new package/feature added in the back end. the updates to the app need to be migrated again.
 - `python3 manage.py migrate`
 
@@ -741,4 +746,12 @@ with that functionality now working, we need to hook up the new sign in/ sign up
     - Sign up: `{% url 'account_signup' %}`
     - login: `{% url 'account_login' %}`
 
-with tat implemented. Check it works.
+with that implemented. Check it works.
+
+test user created using site:
+
+| Username  |  Password  |
+| --------- | ---------- |
+| test-user | Password+1 |
+
+___
