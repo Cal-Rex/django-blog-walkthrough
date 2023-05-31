@@ -679,3 +679,66 @@ finally, with everything created and hooked up, all that is needed is to add the
     <p class="card-text">{{ post.excerpt }}</p>
 </a>
 ```
+___
+
+## Adding authentication
+
+# [![Lesson 9: Adding Authentication](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/LP-glKOWpi8)
+
+Django has built-in user authentication - as demonstrated when creating a superuser, however, for this proejct the django-allauth module is going to be used.
+the reasons are as follows:
+- adds functionality to send password and account confirmation emails 
+- enforces password complexity
+- provides single sign-on using google or facebook
+- provides stock sign in / sign up pages (no CSS)  
+
+Full Django Allauth documentation:
+- https://django-allauth.readthedocs.io/en/latest/
+
+to get started, install django-allauth in the terminal:
+- `pip3 install django-allauth`
+    - bear in mind, requirements.txt will need to be updated when installing a new package!
+        - `pip3 freeze --local > requirements.txt`
+
+with the package installed, the first step is to add allauth urls to the main urls.py file like what was done with summernote.
+go to codestar > urls.py (NOT TO BE CONFUSED WITH blog > urls.py) and add the following path:
+-   ``` py
+    path('accounts/', include('allauth.urls')),
+    ```
+
+Next, settings.py needs to be updated to include allauth in the INSTALLED_APPS list, below `django.contrib.messages` / above `cloudinary_storage`:
+-   ``` py
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    ```
+
+with these libraries added, we also need to add a new variable to settings.py called `SITE_ID`, this is so that django can handle multipe sites from the one database. while this project only has one site using the databse, we still have to tell djago the site number. add the following variable beneath `INSTALLED_APPS` / above `MIDDLEWARE`:
+-   ``` py
+    SITE_ID = 1
+    ```
+
+login and logout urls also need to be added as variables here in the settings. add these variables beneath `SITE_ID`:
+-   ``` py
+    LOGIN_REDIRECT_URL = '/'
+    LOGOUT_REDIRECT_URL = '/'
+    ```
+
+With the new package/feature added in the back end. the updates to the app need to be migrated again.
+- `python3 manage.py migrate`
+
+once successfully migrated, check the feature works by running the project:
+- `python3 manage.py runserver`
+
+add the following to the URL to see if the sign in/sign up feature has been implemented:
+- `/accounts/signup`
+- be mindful that you need to be logged out of admin otherwise this won't work.
+
+with that functionality now working, we need to hook up the new sign in/ sign up pages with our actual site so users can access it properly. go to base.html and link up nav items.
+- under the `{% if user.is_authenticated %}` string, add the following url strings to the relevant anchor tags:
+    - logout: `{% url 'account_logout' %}`
+    - Sign up: `{% url 'account_signup' %}`
+    - login: `{% url 'account_login' %}`
+
+with tat implemented. Check it works.
