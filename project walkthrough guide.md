@@ -820,7 +820,7 @@ ___
 
 ## Enable Commenting
 
-# [![Lesson 10: enable commenting ](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/dm1MToEiXuw)
+# [![Lesson 11: enable commenting ](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/dm1MToEiXuw)
 > At 0:50 in this video, Matt installs a package called django-crispy-forms into the walkthrough project.
 > Since this video was made, a newer version of django-crispy-forms has been released which is automatically installed using the command from this video. To ensure you are working with the same package that Matt uses in this video, please use the following command to install crispy forms for this walkthrough:
 - `pip3 install django-crispy-forms==1.14.0`
@@ -904,7 +904,7 @@ ___
 
 ## adding the POST method
 
-# [![Lesson 10: Adding Authentication](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/K200vsthNQU)
+# [![Lesson 12: adding commenting](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/K200vsthNQU)
 
 Add a POST method to the `PostDetail` class.
 
@@ -1014,3 +1014,128 @@ Test the project to see if the new functionality works
 7. append `/admin` to the url and login as admin
 8. check the comment table to see the unpublished comment
 9. approve it!
+
+___
+
+## Enable likes
+
+# [![Lesson 13: enable likes ](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/bNqsrk8x1TI)
+
+to enable the likes, we are going to need another view. this means we need to follow the same 3-step process as before:
+
+1. Create the code
+2. Create a template to render the view
+3. Connect up our URLs in the urls.py file
+
+1. **create the view code**
+    - in views.py create a new class-based view called PostLike
+    - It should inherit from View
+    - The method will be post and accept 3 parameters: self, request, and slug
+        ``` py
+        class PostLike(View):
+        
+        def post(self, request, slug):
+        ```
+    - before we can get this post function to do anything, it needs to know what it's targeting, so we make the variable `post` and apply the standard django `get_object_or_404` method as before. it's target object being the unique identifier of the post (which would be the `slug`). so we target the the table item within the `Post` database with the appropriate `slug`:
+        ``` py
+        class PostLike(View):
+        
+        def post(self, request, slug):
+            post = get_object_or_404(Post, slug=slug)
+        ```
+    - now that we have targeted the specific post, we need to check if it has already been liked, and if it has already been liked by the user, that like needs to be removed if the like is selected/toggled
+    - to do this, create an `if` statement that targets the `post`, its `likes` variable, and then `filter` through the likes by `id`, checking that it matches the `user` `id` making the `request` to see if it `exists()`
+        - with that filter running as the `if` statement - if the user's `id` is found among the `likes`, the next line of code will `remove` the `likes` value of the `request`ed `user`. with no longer having a value, the `likes` variable will revert to its previously defined boolean value of `False` in the original `PostDetail` class.
+        - the `else` statement will just do the same as above, except, instead of `remove`, the `add` method is used instead with the same parameters to apply the same logic in reverse.
+        ``` py
+        class PostLike(View):
+            
+            def post(self, request, slug):
+                post = get_object_or_404(Post, slug=slug)
+            
+                if post.likes.filter(id=request.user.id).exists():
+                    post.likes.remove(request.user)
+                else:
+                    post.likes.add(request.user)
+        ```
+    - now because we want the toggle to have an instantaneous response, we need to use another package that allows the value to be updated in real-time (without re-loading the whole page). we need to import a new function from django called `HttpResponseRedirect`, add it with the following `import` command at the top of the file:
+        ``` py
+        from django.http import HttpResponseRedirect
+        ```
+    - also, so that we can target URLs by the name we've given them in urls.py, we need to add the `reverse` method from the `django.shortcuts` library, the same place where we are pulling the `get_object_or_404` method from:
+        ``` py
+        # the following should be line-1 in the views.py file.
+        from django.shortcuts import render, get_object_or_404, reverse
+        ```
+    - back down at the new `PostLike` class, we need to now add a return statement that takes advantage of our newly imported shortcut methods:
+        ``` py
+        class PostLike(View):
+            
+            def post(self, request, slug):
+                post = get_object_or_404(Post, slug=slug)
+            
+                if post.likes.filter(id=request.user.id).exists():
+                    post.likes.remove(request.user)
+                else:
+                    post.likes.add(request.user)
+            
+            return HttpResponseRedirect(reverse('post_detail', args=[slug]))
+        ```
+    - upon a successful iteration of the `PostLike` class, the `return`ing response from the class will reload the `post_detail` template tied to the specific `slug` of the instanced post, saving a complete refresh of all of the templates.
+
+2. **Create a template to render the view**
+    - go to the `post_detail.html` template
+    - we now need to update the heart icon on the template to turn it into a button, so that it toggles when clicked, but only when an authenticated user is logged in
+    - to do this, we need to create a form masquerading as a single button or icon.
+    - first, in the column that displays `{{ post.number_of_likes }}`, add a django `if statement` at the top of the div to see if the viewing user is authenticated:
+        ``` html
+        <div class="col-1">
+            <strong>
+                {% if user.is_authenticated %}
+                {% endif %}
+            </strong>
+        </div>
+        ```
+    - with that set up, inside the `if` statement we can add the form
+    - the form now needs to first check if the boolean value is already set to display the correct type of icon on the button, so an additonal `if` / `else` statement needs to be nested into the initial `if user.is_authenticated` statement that checks if the `liked` variable of the instanced `PostDetail` has the boolean value of `True` 
+    - also, a contingency needs to be put in plae if the user viewing the page is not an authenticated user, so an `else` statment needs to be added to the `if user.is_authenticated` to handle that potential outcome
+    - finally, we will want to display the number of likes a post has next to the liked icon, which should give us the following result:
+        ``` html
+        <div class="col-1">
+            <strong>
+                {% if user.is_authenticated %}
+                <form class="d-inline" action="{% url 'post_like' post.slug %}" method="POST">
+                    <!-- action targets the PostLike template that has the matching post.slug -->
+                    <!-- the PostLike class is linked up to the form by its return statement, and also in the urls.py file, giving it a path with the name of post_like which is shown below. -->
+                    {% csrf_token %}
+                    <!-- ALWAYS REMEMBER THE USE OF A CSRF TOKEN ON FORMS -->
+                    {% if liked %}
+                    <button type="submit" name="blogspot_id" value="{{post.slug}}" class="btn-like"><i class="fas fa-heart"></i></button>
+                    {% else %}
+                    <button type="submit" name="blogspot_id" value="{{post.slug}}" class="btn-like"><i class="far fa-heart"></i></button>
+                    {% endif %}
+                </form>
+                {% else %}
+                <span class="text-secondary"><i class="far fa-heart"></i></span>
+                {% endif %}
+                <span class="text-secondary"> {{ post.number_of_likes }}</span>
+            </strong>
+        </div>
+        ```
+3. **Connect up our URLs in the urls.py file**
+    - create a path in blog > urls.py file in the `urlpatterns` list with the following prameters:
+        - the path should be: `like/<slug:slug>`
+        - the view should be `PostLike`, cast `as_view()`
+        - The name needs to be `post_like`, the same as the url reference in both the form, and the `return` statement at the bottom of the `PostLike` class
+        ``` py
+        urlpatterns = [
+        path('', views.PostList.as_view(), name='home'),
+        path('<slug:slug>/', views.PostDetail.as_view(), name='post_detail'),
+        path('like/<slug:slug>', views.PostLike.as_view(), name='post_like'),
+        ]
+        ```
+
+Once implemented, test to see if it works.
+- `python3 manage.py runserver`
+- login as a user
+- try liking something and see what happens
