@@ -901,3 +901,116 @@ Then, we need to add the comment html to `post_detail.html`, in the last `<div>`
 run the app now to see if everything is displaying as it should, though note: trying to submit a comment will throw an error at this stage.
 
 ___
+
+## adding the POST method
+
+# [![Lesson 10: Adding Authentication](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/K200vsthNQU)
+
+Add a POST method to the `PostDetail` class.
+
+Naturally, a POST method normally requires the same info as a GET method, so we can start by copying the existing `get` funtion in the `PostDetail` class, and then changing its name from `get` to `post`:
+``` py
+def post(self, request, slug, *args, **kwargs):
+    queryset = Post.objects.filter(status=1)
+    post = get_object_or_404(queryset, slug=slug)
+    comments = post.comments.filter(approved=True).order_by('created_on')
+    liked = False
+    if post.likes.filter(id=self.request.user.id).exists():
+        liked = True
+    
+    # add next piece of code below this example - here
+
+    return render(
+            request,
+            "post_detail.html",
+            {
+                "post": post,
+                "comments": comments,
+                "liked": liked,
+                "comment_form": CommentForm
+            }
+        )
+```
+
+Then, because we havent previously accounted for the new comment box on the post_details page when building the PostDetail class. We are going to need to add it in the space specified by the comment in the example above:
+```py
+    comment_form = CommentForm(data=request.POST)
+```
+This assigns the form data to a variable. the code here determines that the value of the data for `CommentForm` is retreieved when the `POST` `request` has been made.
+
+With that in place, we now need to make sure the data passed into the `CommentForm` is valid, lest we create any errors or unsuitable data. underneath the `comment_form` variable, add an `if` statement to check that the form `is_valid()`. If true, the following commands should run:
+``` py
+    if comment_form.is_valid():
+        comment_form.instance.email = request.user.email
+        comment_form.instance.name = request.user.username
+        comment = comment_form.save(commit=False)
+        comment.post = post
+        comment.save()
+    else:
+        comment_form = CommentForm()
+```
+- `instance` targets the that specific instance of `comment_form` meaning you can make a request of the data from a user making the post request in that `instance`
+- at this point, we want to save what we have, but we dont want to commit/post any data to the server, as we want to make sure all the data is retrieved before it is saved and published., hense the use fo creating the `comment` variable, but attaching a `(commit=False)` argument to the `save` method. 
+- now we link up the comment to its specified post, where the `post` variable the `comment` class should now share the value of the specified `post`
+- with the `if` statement written out, the `else` statement needs to be applied to avoid an error being thrown. instead, the `comment_form` just reloads an instance of `CommentForm()`.
+
+
+next, we add a new value into the `return render()` argument's dictionary variable. after `"comments": comments,` add `"commented": True`:
+``` py
+    return render(
+            request,
+            "post_detail.html",
+            {
+                "post": post,
+                "comments": comments,
+                "commented": True,
+                "liked": liked,
+                "comment_form": CommentForm
+            }
+        )
+```
+
+Because we have added a new KVP to the return render in the `POST` method, we will now need to amend the `GET` method. The `"commented"` KVP needs to be added into the same place in the `get` function, except this time its value needs to be `False`
+``` py
+    return render(
+            request,
+            "post_detail.html",
+            {
+                "post": post,
+                "comments": comments,
+                "commented": False,
+                "liked": liked,
+                "comment_form": CommentForm
+            }
+        )
+```
+
+With that added, lets add the approval function to the commenting process.
+
+inside `post_detail.html` add the following code to above `{% if user.is_authenticated() %}`:
+``` html
+{% if commented %}
+<div class="alert alert-success" role="alert">
+    Your comment is awaiting approval
+</div>
+{% else %}
+```
+- The new `if` statement checks if the `"commented"` KVP from the `return` True, if it is, the user will get a note to say the comment is awaiting approval, otherwise it will just show the form.
+- also, as we have just added a new `if` statement to the html, be sure to close it at the bottom of the code (so there should be 2 `endif`s now):
+``` html
+{% endif %}
+{% endif %}
+```
+
+Test the project to see if the new functionality works
+1. run the project in the local environment:
+    - `python3 manage.py runserver`
+2. Login
+3. select a published post
+4. make a comment and submit it
+5. if woking correctly the comment box should say:
+    - > Your comment is awaiting approval
+6. Logout
+7. append `/admin` to the url and login as admin
+8. check the comment table to see the unpublished comment
+9. approve it!
