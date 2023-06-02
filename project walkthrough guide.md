@@ -1139,3 +1139,95 @@ Once implemented, test to see if it works.
 - `python3 manage.py runserver`
 - login as a user
 - try liking something and see what happens
+
+___
+
+## Implementing site messages
+
+# [![Lesson 14: messages ](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/bNqsrk8x1TI)
+> Messages in Django are very useful because they can be flashed onto the screen to  give visual feedback to the user. We're going to add message handling to our blog to  give feedback when we've performed user actions. And we're going to add some  custom JavaScript to cause the messages to automatically dismiss themselves.
+
+first, navigate to settings.py
+
+by default, django installs its own packages for messages, and this can be seen in `INSTALLED_APPS`:
+```py
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',  # <------- here, see!
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'cloudinary_storage',
+    'django.contrib.staticfiles',
+    'cloudinary',
+    'django_summernote',
+    'crispy_forms',
+    'blog',
+]
+```
+
+because of this, all we need to do is just import the message method from django:
+``` py
+from django.contrib.messages import constants as messages
+```
+
+Next, we need to assign the message tags.
+- message tags indicate the category or type the message is. eg, warning, error or success message etc.
+- tags can be assigned to different bootstrap classes so that the colour of the message can change in accordance with its tag type
+
+add the `MESSAGE_TAGS` KVP variable to settings.py above the `CRISPY_TEMPLATE_PACK` variable.
+``` py
+MESSAGE_TAGS = {
+    messages.DEBUG: 'alert-info',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger',
+}
+# each of the tags above are paired to a different bootstrap class
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+```
+
+now that the messages are set up in settings. we need to implement them. Navigate to base.html.
+directly below the `</nav>` tag. add:
+``` html
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-m-2">
+        {% for message in messages %}
+        <div class="alert {{ message.tags }} alert-dismissible fade show" id="msg" role="alert">
+        {{ message | safe }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+        </button>
+        </div>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+```
+- in the code above, the for loop loops through all of the message types in `messages` imported in settings.py to see if any functions have made them trigger.
+
+test that the following code works.
+- `python3 manage.py runserver`
+
+for more info and documentation on the messages functionality of django: https://docs.djangoproject.com/en/3.2/ref/contrib/messages/#using-messages-in-views-and-templates
+
+the messages at this point show. but they do not automatically dismiss, this can be achieved by writing timers in javascript. add a new script to the base.html file below the footer and implement the following code:
+``` html
+<script>
+    setTimeout(function() {
+        let messages = document.getElementById("msg");
+        let alert = new bootstrap.Alert(messages);
+        alert.close();
+    }, 3000);
+</script>
+```
+- script links all potential items with id of `msg` to the `messages` variable
+- any `new` instances of the `messages` variable that come under the purview of a `bootstrap` `Alert` are assigned to the `alert` variable.
+- the `close` method then closes the alert. it does this after the amount of time specified within the second argument of the `setTimeout` function, which in this case is 3000 miliseconds / 3 seconds
+- more info on the bootstrap alert function and documentation: https://getbootstrap.com/docs/5.0/components/alerts/
