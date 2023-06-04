@@ -1231,3 +1231,31 @@ the messages at this point show. but they do not automatically dismiss, this can
 - any `new` instances of the `messages` variable that come under the purview of a `bootstrap` `Alert` are assigned to the `alert` variable.
 - the `close` method then closes the alert. it does this after the amount of time specified within the second argument of the `setTimeout` function, which in this case is 3000 miliseconds / 3 seconds
 - more info on the bootstrap alert function and documentation: https://getbootstrap.com/docs/5.0/components/alerts/
+
+___
+
+## Final Deployment
+
+# [![Lesson 14: Final Deployment ](http://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://youtu.be/HAc2uWz1fqI)
+
+FIRST! TURN THE DEBUG FLAG TO FALSE IN settings.py!
+reasons why:
+- Firstly, Django will serve the static  files such as css files itself,  
+instead of relying on Cloudinary.
+ - Django works more efficiently by retreiving it's data from CDNs, as the project grows, getting its static files from the Database will make it clunky and prone to errors.
+- the traceback when errors are thrown can potentially reveal senstitive information with your code
+
+next, we now need to add the following variable to settings.py, below DEBUG:
+``` py
+DEBUG = False
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+```
+- this variable needs to be added because without it, summernote would not work on the deployed project.
+    - This is because of a security feature known as CORS (Cross Origin Resource Sharing)
+    - CORS tells a browser what sources are allowed to share packages with the browser
+
+Once this is implemented, add, commit and push the project to github.
+
+now, in Heroku:
+
