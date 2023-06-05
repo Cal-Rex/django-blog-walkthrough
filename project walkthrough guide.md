@@ -1258,4 +1258,15 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 Once this is implemented, add, commit and push the project to github.
 
 now, in Heroku:
+we no longer need the `DISABLE_COLLECTSTATIC` config var, so open config vars and remove it
 
+Once that is done, navigate to the deploy section and deploy the branch.
+
+and thats it!
+
+some things to work on to improve the project:
+
+1. expand the messaging system to display error messages when a user submits an empty comment form
+2. Use the social apps feature of AllAuth to add singly-sign on using google, facebook or another authentication service
+3. build a number_of_comments method so that we can display the number of comments of a post on the front page
+4. combine knowledge of the Javascript fetch with djago knowledge to silently call the "like" URL in the background - which would mean only the like would reload - and not reload the whole page. 
